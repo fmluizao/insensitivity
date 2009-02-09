@@ -1,0 +1,33 @@
+Insensitivity
+==========
+
+Insensitivity is a rails plugin that makes a field case-insensitive 
+Changes the WHERE clause to use the "_search" attribute instead the original
+You must add #{field_name}_search in the table for every 
+
+Example
+=======
+
+Migration:
+
+create_table :foos do |t|
+  t.string :field1
+  t.string :field1_search
+  t.string :field2
+  t.string :field2_search
+end
+
+Model:
+
+class Foo < ActiveRecord::Base
+ insensible :field1, :field2
+end
+
+Foo.find_by_field1('bla')
+SELECT * FROM foos WHERE foo.field1_search = 'bla'
+
+Foo.find(:first, :conditions => ['field1 = ?', 'bla'], :order => 'field1')
+SELECT * FROM foos WHERE field1_search = 'bla' ORDER BY field1 LIMIT 1
+
+
+Copyright (c) 2009 Fernando Luizao, released under the MIT license
