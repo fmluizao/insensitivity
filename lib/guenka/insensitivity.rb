@@ -31,7 +31,7 @@ module Guenka #:nodoc:
           define_method :assign_insensible_fields do
             attrs.each do |attr|
               attr_value = send("#{attr}")
-              write_attribute("#{attr}_search", attr_value.to_s.remover_acentos.downcase)
+              write_attribute("#{attr}_search", attr_value.to_s.insensible)
             end
           end
           
@@ -46,7 +46,7 @@ module Guenka #:nodoc:
         transaction do
           all.each do |obj|
             insensible_fields.each do |field|
-              obj["#{field}_search"] = obj[field].remover_acentos.downcase
+              obj["#{field}_search"] = obj[field].insensible
             end
             obj.save(false) #dont perform validations
           end

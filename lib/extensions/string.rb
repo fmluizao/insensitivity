@@ -11,4 +11,10 @@ class String
       texto
     end
   end
+  
+  unless respond_to? :insensible
+    def insensible
+      self.remover_acentos.downcase
+    end
+  end
 end
