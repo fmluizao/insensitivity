@@ -42,6 +42,17 @@ module Guenka #:nodoc:
         include InstanceMethods
       end
       
+      def make_insensible!
+        transaction do
+          all.each do |obj|
+            insensible_fields.each do |field|
+              obj["#{field}_search"] = obj[field].remover_acentos.downcase
+            end
+            obj.save(false) #dont perform validations
+          end
+        end
+      end
+      
       def insensible?
         self.included_modules.include?(InstanceMethods)
       end
