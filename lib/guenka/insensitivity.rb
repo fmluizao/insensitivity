@@ -24,8 +24,9 @@ module Guenka #:nodoc:
       
       def insensible(*attrs)
         unless insensible? # don't let AR call this twice
-          @@insensible_fields = attrs
-          
+          class_inheritable_accessor :_insensible_fields
+          self._insensible_fields = attrs
+           
           before_save :assign_insensible_fields
 
           define_method :assign_insensible_fields do
@@ -58,7 +59,7 @@ module Guenka #:nodoc:
       end
       
       def insensible_fields
-        @@insensible_fields ||= []
+        self._insensible_fields ||= []
       end
     end
 
