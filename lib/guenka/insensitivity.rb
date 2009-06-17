@@ -23,14 +23,14 @@ module Guenka #:nodoc:
     module ClassMethods
       
       def insensible(*attrs)
+        class_inheritable_accessor :_insensible_fields
+        self._insensible_fields = attrs
+         
         unless insensible? # don't let AR call this twice
-          class_inheritable_accessor :_insensible_fields
-          self._insensible_fields = attrs
-           
           before_save :assign_insensible_fields
 
           define_method :assign_insensible_fields do
-            attrs.each do |attr|
+            self._insensible_fields.each do |attr|
               attr_value = send("#{attr}")
               write_attribute("#{attr}_search", attr_value.to_s.insensible)
             end
