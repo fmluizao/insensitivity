@@ -2,19 +2,24 @@ module Guenka #:nodoc:
   module Insensitivity #:nodoc:
 
     # 
-    # Change the WHERE conditions to use the _search field instead of the default field.
+    # Change the WHERE conditions to translate the field removing accents and applying lowercase
     # 
-    # This assumes the table has a _search field for every field declared as insensible
-    #
     #   class Foo < ActiveRecord::Base
     #     insensible :field1, :field2
     #   end
     #
     #   Foo.find_by_field1('bla')
-    #   SELECT * FROM foos WHERE widgets.field1_search = 'bla'
+    #   SELECT * FROM foos 
+    #   WHERE TRANSLATE(LOWER(widgets.field1), 
+    #       'âãäåāăąèééêëēĕėęěìíîïìĩīĭóôõöōŏőùúûüũūŭůç', 
+    #       'aaaaaaaeeeeeeeeeeiiiiiiiiooooooouuuuuuuuc') = 'bla'
     #
     #   Foo.find(:first, :conditions => ['field1 = ?', 'bla'], :order => 'field1')
-    #   SELECT * FROM foos WHERE field1_search = 'bla' ORDER BY title LIMIT 1
+    #   SELECT * FROM foos 
+    #   WHERE TRANSLATE(LOWER(widgets.field1), 
+    #       'âãäåāăąèééêëēĕėęěìíîïìĩīĭóôõöōŏőùúûüũūŭůç', 
+    #       'aaaaaaaeeeeeeeeeeiiiiiiiiooooooouuuuuuuuc') = 'bla' 
+    #   ORDER BY field1 LIMIT 1
     #
     def self.included(base) # :nodoc:
       base.extend ClassMethods
@@ -27,31 +32,11 @@ module Guenka #:nodoc:
         self._insensible_fields = attrs
          
         unless insensible? # don't let AR call this twice
-          before_save :assign_insensible_fields
-
-          define_method :assign_insensible_fields do
-            self._insensible_fields.each do |attr|
-              attr_value = send("#{attr}")
-              write_attribute("#{attr}_search", attr_value.to_s.insensible)
-            end
-          end
-          
           class << self
             alias_method :construct_finder_sql_without_insensitivity, :construct_finder_sql
           end
         end
         include InstanceMethods
-      end
-      
-      def make_insensible!
-        transaction do
-          all.each do |obj|
-            insensible_fields.each do |field|
-              obj["#{field}_search"] = obj[field].insensible
-            end
-            obj.save(false) #dont perform validations
-          end
-        end
       end
       
       def insensible?
@@ -96,11 +81,15 @@ module Guenka #:nodoc:
           
           #change the original by the insensible in the where clause
           insensible_fields.each do |field|
-            where_clause.gsub!(/\b#{field}\b/, "#{field}_search")
+            where_clause.gsub!(/("#{table_name}"\."#{field}"|\b#{table_name}\.#{field}\b|\b#{field}\b)/, insensible_clause_for('\1'))
           end
           
           #build the sql again
           "#{first_clause}#{where_clause}#{last_clause}"
+        end
+
+        def insensible_clause_for(field)
+          %{TRANSLATE(LOWER(#{field}), 'âãäåāăąèééêëēĕėęěìíîïìĩīĭóôõöōŏőùúûüũūŭůç', 'aaaaaaaeeeeeeeeeeiiiiiiiiooooooouuuuuuuuc')}
         end
 
       end
