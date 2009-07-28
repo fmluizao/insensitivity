@@ -1,9 +1,11 @@
 Insensitivity
 ==========
 
-Insensitivity is a rails plugin that makes a field case-insensitive 
-Changes the WHERE clause to use the "_search" attribute instead the original
-You must add #{field_name}_search in the table for every 
+Insensitivity is a rails plugin that helps to do case and accent insensitive searches in PostgreSQL
+It change the WHERE conditions to translate the field removing accents and applying lowercase
+
+NOTE: I'm abandonning the *_search fields approach and making the plugin PostgreSQL specific.
+If you want to use the old aproach, it is tagged as 0.0.1
 
 Example
 =======
@@ -12,9 +14,7 @@ Migration:
 
 create_table :foos do |t|
   t.string :field1
-  t.string :field1_search
   t.string :field2
-  t.string :field2_search
 end
 
 Model:
@@ -24,10 +24,17 @@ class Foo < ActiveRecord::Base
 end
 
 Foo.find_by_field1('bla')
-SELECT * FROM foos WHERE foo.field1_search = 'bla'
+SELECT * FROM foos 
+WHERE TRANSLATE(LOWER(widgets.field1), 
+    'âãäåāăąèééêëēĕėęěìíîïìĩīĭóôõöōŏőùúûüũūŭůç', 
+    'aaaaaaaeeeeeeeeeeiiiiiiiiooooooouuuuuuuuc') = 'bla'
 
 Foo.find(:first, :conditions => ['field1 = ?', 'bla'], :order => 'field1')
-SELECT * FROM foos WHERE field1_search = 'bla' ORDER BY field1 LIMIT 1
+SELECT * FROM foos 
+WHERE TRANSLATE(LOWER(widgets.field1), 
+    'âãäåāăąèééêëēĕėęěìíîïìĩīĭóôõöōŏőùúûüũūŭůç', 
+    'aaaaaaaeeeeeeeeeeiiiiiiiiooooooouuuuuuuuc') = 'bla' 
+ORDER BY field1 LIMIT 1
 
 
 Copyright (c) 2009 Fernando Luizao, released under the MIT license
