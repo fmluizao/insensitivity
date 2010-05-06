@@ -45,10 +45,6 @@ module Guenka #:nodoc:
       def insensible?
         self.included_modules.include?(InstanceMethods)
       end
-      
-      def insensible_fields
-        self._insensible_fields ||= []
-      end
     end
 
     module InstanceMethods #:nodoc:
@@ -57,6 +53,10 @@ module Guenka #:nodoc:
       end
 
       module ClassMethods
+        def insensible_fields
+          self._insensible_fields ||= []
+        end
+
         private
         def construct_finder_sql(options)
           sql = construct_finder_sql_without_insensitivity(options)
