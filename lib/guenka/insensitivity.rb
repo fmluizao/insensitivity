@@ -27,15 +27,16 @@ module Guenka #:nodoc:
     end
 
     module ClassMethods
-      
+
       def insensible(*attrs)
         class_inheritable_accessor :_insensible_fields
         self._insensible_fields = attrs
-         
+
         unless insensible? # don't let AR call this twice
           class << self
             alias_method :construct_finder_sql_without_insensitivity, :construct_finder_sql
             alias_method :construct_calculation_sql_without_insensitivity, :construct_calculation_sql
+            alias_method :construct_finder_sql_with_included_associations_without_insensitivity, :construct_finder_sql_with_included_associations
           end
         end
         include InstanceMethods
@@ -64,6 +65,11 @@ module Guenka #:nodoc:
         
         def construct_calculation_sql(operation, column_name, options)
           sql = construct_calculation_sql_without_insensitivity(operation, column_name, options)
+          insert_insensible_clause_in_query(sql)
+        end
+
+        def construct_finder_sql_with_included_associations(options, join_dependency)
+          sql = construct_finder_sql_with_included_associations_without_insensitivity(options, join_dependency)
           insert_insensible_clause_in_query(sql)
         end
         
