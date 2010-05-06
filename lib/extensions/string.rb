@@ -1,3 +1,4 @@
+# encoding: UTF-8
 class String
   #emprestado do brazilian-rails
   unless respond_to? :remover_acentos

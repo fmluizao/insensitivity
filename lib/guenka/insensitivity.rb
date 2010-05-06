@@ -1,3 +1,4 @@
+# encoding: UTF-8
 module Guenka #:nodoc:
   module Insensitivity #:nodoc:
 
@@ -99,7 +100,7 @@ module Guenka #:nodoc:
         end
 
         def insensible_clause_for(field)
-          %{TRANSLATE(LOWER(#{field}), 'âãäåāăąèééêëēĕėęěìíîïìĩīĭóôõöōŏőùúûüũūŭůç', 'aaaaaaaeeeeeeeeeeiiiiiiiiooooooouuuuuuuuc')}
+          %{TRANSLATE(LOWER(#{field}), 'áàâãäåāăąèééêëēĕėęěìíîïìĩīĭóôõöōŏőùúûüũūŭůç', 'aaaaaaaaaeeeeeeeeeeiiiiiiiiooooooouuuuuuuuc')}
         end
 
       end
